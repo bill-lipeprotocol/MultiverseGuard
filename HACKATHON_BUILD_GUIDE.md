@@ -1,65 +1,65 @@
 # MultiverseGuard - 24-Hour Hackathon Build Guide
 
 ## Goal
-Build a working MultiverseGuard demo during the 24-hour hackathon that clearly shows **parallel "multiverse" reasoning** using Gemma 4 31B on Cerebras. The system should explore **4 competing hypotheses** in parallel and produce a ranked remediation plan.
+Build a working MultiverseGuard demo during the 24-hour hackathon that clearly demonstrates **parallel "multiverse" reasoning** using Gemma 4 31B on Cerebras. The system should explore **4 competing hypotheses** in parallel and deliver a ranked remediation plan with rollback steps.
 
 ## Important Notes
-- You are starting around **12 PM on Sunday**, so you will have approximately **20–22 hours**.
-- It is recommended to **build sequentially first**, then convert to parallel execution.
-- Use **mock mode** heavily during development.
+- You are starting around **12:00 PM on Sunday**, giving you approximately **20–22 hours**.
+- It is strongly recommended to **build the graph sequentially first**, then convert it to parallel execution.
+- Use **mock mode** heavily during development to move quickly and save API usage.
 
 ## Recommended Order of Work
 
 ### Phase 1: Schemas (1.5 – 2 hours)
 - Create `src/models/schemas.py`
-- Define clear Pydantic models:
+- Define the following Pydantic models:
   - `IncidentInput`
   - `VisionReport`
   - `Hypothesis`
   - `UniverseResult`
   - `FinalIncidentReport`
-- Keep schemas strict but reasonably sized
+- Keep schemas strict but reasonably sized for reliable structured outputs.
 
 ### Phase 2: Cerebras Client (2 – 2.5 hours)
 - Create `src/utils/cerebras_client.py`
-- Support:
-  - Text + image input
+- The client should support:
+  - Text and image inputs
   - Structured outputs using Pydantic
-  - Mock mode + live mode switching
-- Add basic timing measurement
+  - Easy switching between mock mode and live mode
+- Include basic timing measurement.
 
-### Phase 3: Multiverse Graph (5 – 6 hours) ← Most Important Phase
+### Phase 3: Multiverse Graph (5 – 6 hours) ← Highest Priority
 - Create `src/graph/multiverse_graph.py`
-- Build this flow:
-  1. Extract evidence from logs + image
+- Implement the following flow:
+  1. Extract evidence from logs and image
   2. Generate 4 hypotheses
-  3. Run 4 universe branches (start sequential, then make parallel)
+  3. Investigate 4 universe branches (build sequentially first, then add parallelism)
   4. Synthesize and rank the final report
-- Use **LangGraph `Send`** for parallel execution
-- Implement a **sequential fallback** for reliability
+- Use **LangGraph `Send`** for parallel execution.
+- Implement a **sequential fallback** for reliability and easier debugging.
 
 ### Phase 4: UI Integration (3.5 – 4 hours)
 - Update `src/ui/app.py`
-- Connect the UI to the compiled graph
+- Connect the Streamlit UI to the compiled graph.
 - Clearly display:
-  - 4 universe results with confidence and evidence
+  - Results from all 4 universes (with confidence and evidence)
   - Final ranked recommendation with rollback steps
-  - Timing metrics and mode (mock/live)
+  - Timing metrics and current mode (mock/live)
 
 ### Phase 5: Testing, Demo & Submission (3 – 4 hours)
-- Write basic tests
+- Write basic tests to validate the core flow.
 - Finalize `demos/video_script.md`
-- Record the 60-second demo video
-- Prepare submission materials and README
+- Record the 60-second demo video.
+- Prepare submission materials.
 
 ## Tips for Success
 
-- Build the graph **sequentially first** — this is much easier to debug.
-- Convert to parallel execution using `Send` only after the sequential version works.
-- Use **mock mode** while developing. Only test with live Gemma 4 calls when needed.
-- Focus on making the **4 parallel universes** clearly visible in the UI.
-- Document your decisions in `README.md` as you go.
+- Build the graph **sequentially first** — this significantly reduces debugging difficulty.
+- Only convert to parallel execution (`Send`) after the sequential version is working reliably.
+- Keep prompts focused and relatively concise.
+- Make the **4 parallel universes** clearly visible and easy to understand in the UI.
+- Document key decisions in `README.md` as you build.
 
-## First Action When Hackathon Starts
+## First Action When the Hackathon Starts
 
-Start with **Phase 1 (Schemas)**. This is the foundation for everything else.
+Begin with **Phase 1 (Schemas)**. This forms the foundation for the entire system.

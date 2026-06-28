@@ -1,0 +1,10 @@
+[project]
+name = "multiverseguard"
+version = "0.1.0"
+description = "Multimodal multiverse incident response MVP for Cerebras x Gemma 4 Hackathon"
+requires-python = ">=3.10"
+
+[tool.pytest.ini_options]
+pythonpath = ["."]
+testpaths = ["tests"]
+norecursedirs = [".venv", ".git", "data", "demos"]

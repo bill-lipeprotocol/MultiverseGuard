@@ -3,45 +3,45 @@
 ## Product Brief
 
 MultiverseGuard is a multimodal multi-agent system for enterprise incident response.  
-When an incident happens, teams usually investigate one possible cause at a time. MultiverseGuard instead explores **multiple competing hypotheses in parallel** (called "universes"), analyzes each one using Gemma 4 on Cerebras, and produces a ranked remediation plan with rollback steps.
+When an incident occurs, teams typically investigate one possible cause at a time. MultiverseGuard instead explores **multiple competing hypotheses in parallel** (referred to as "universes"), analyzes each using Gemma 4 on Cerebras, and produces a ranked remediation plan with rollback guidance.
 
-**Demo Scenario**: A checkout SEV1 incident after a deployment, involving database pool issues with several possible causes.
+**Primary Demo Scenario**: A checkout SEV1 incident following a deployment, involving database pool saturation with several plausible alternative causes.
 
 ## Hackathon Compliance
 
-**Rule Reminder**: Pre-existing scaffolding is allowed, but the **core functionality** must be built during the 24-hour hackathon and must use **Gemma 4 31B on Cerebras** as the main model.
+**Rule Reminder**: Pre-existing scaffolding is permitted, but the **core functionality** must be developed during the 24-hour hackathon and must use **Gemma 4 31B on Cerebras** as the central model.
 
-### What Was Done Before the Hackathon (Scaffolding)
-- Project folder structure
-- `requirements.txt` and environment setup
-- Basic documentation
+### Scaffolding Completed Before the Hackathon
+- Project folder structure and environment setup
+- `requirements.txt` and configuration files
+- Documentation (`README.md`, `PROJECT_CONTEXT.md`, `HACKATHON_BUILD_GUIDE.md`)
 - Example data and demo assets
-- Empty source code folders
+- Empty source code package structure
 
-### What Will Be Built During the Hackathon (Core Work)
+### Core Work to Be Completed During the Hackathon
 - Pydantic schemas for structured outputs
-- Cerebras client with mock and live mode
-- Agent prompts
+- Cerebras client supporting mock and live modes
+- Agent prompts and reasoning logic
 - Multiverse graph with 4 parallel universes
-- Streamlit UI connected to the graph
-- Tests and demo video
+- Streamlit UI integration with the graph
+- Tests and demo materials
 
 ## Key Concepts
 
-| Term                    | Simple Meaning                                      | Why It Matters |
-|-------------------------|-----------------------------------------------------|----------------|
-| **Multiverse**          | Running multiple hypotheses at the same time        | Shows the benefit of fast inference |
-| **LangGraph**           | Tool to build agent workflows and parallel logic    | Used to create the 4-universe system |
-| **Structured Output**   | Forcing the model to return clean JSON data         | Makes the system reliable |
-| **Mock Mode**           | Fake responses for testing (no API calls)           | Helps development without using credits |
-| **Universe Worker**     | The part that investigates one hypothesis           | Core of the parallel reasoning |
+| Term                    | Simple Explanation                                      | Importance |
+|-------------------------|---------------------------------------------------------|----------|
+| **Multiverse**          | Investigating multiple hypotheses simultaneously        | Demonstrates the value of fast inference |
+| **LangGraph**           | Framework for building agent workflows and graphs       | Powers the parallel universe logic |
+| **Structured Output**   | Forcing the model to return clean, usable JSON          | Enables reliable agent handoffs |
+| **Mock Mode**           | Simulated responses for development and testing         | Speeds up iteration and reduces costs |
+| **Universe Worker**     | Component responsible for analyzing one hypothesis      | Core of the parallel reasoning system |
 
 ## Success Criteria
 
-- Accept logs + dashboard image
-- Use Gemma 4 31B on Cerebras for reasoning
-- Generate and investigate 4 universes
-- Rank the universes with confidence scores
-- Provide remediation steps with rollback
-- Show timing metrics in the UI
-- Work in both mock and live mode
+- Accept incident logs and at least one dashboard image
+- Use Gemma 4 31B on Cerebras for core reasoning
+- Generate and investigate 4 universes in parallel
+- Rank universes with confidence scores
+- Deliver remediation steps that include rollback actions
+- Display timing metrics in the UI
+- Function correctly in both mock and live modes

@@ -3,74 +3,75 @@
 **Enterprise Multimodal Multi-Agent Incident Response System**  
 Built for the Cerebras x Google Gemma 4 Hackathon.
 
-MultiverseGuard helps incident response teams by exploring **multiple root cause hypotheses in parallel** (called "universes") instead of one at a time. It uses **Gemma 4 31B on Cerebras** to analyze logs and dashboard images, then produces a ranked remediation plan with rollback steps.
+MultiverseGuard enables faster incident response by exploring **4 root-cause universes in parallel** instead of investigating one theory at a time. It uses **Gemma 4 31B on Cerebras** to analyze logs and dashboard context, then produces a ranked remediation plan with rollback steps.
 
 ## Hackathon Compliance
 
-This project follows the hackathon rules:
+This project adheres to the hackathon rules:
 
-- Only **scaffolding** (project structure, dependencies, basic documentation, and example data) was prepared before the event.
-- The **core functionality** — including schemas, agent logic, multiverse graph, prompts, and UI integration — will be built **during the 24-hour hackathon**.
-- **Gemma 4 31B on Cerebras** is the central model used for all reasoning and decision-making.
+- Only **scaffolding** (project structure, dependencies, documentation, and example assets) was prepared before the event.
+- The **core functionality** — including schemas, Cerebras client, multiverse graph logic, prompts, UI integration, and tests — is built during the 24-hour hackathon.
+- **Gemma 4 31B on Cerebras** serves as the central model for reasoning and decision-making in live mode.
+- Mock mode is used for development and demo rehearsal to protect stability and API usage.
 
-## Features
+## Key Features
 
-- Accepts incident logs and dashboard screenshots
-- Uses Gemma 4 31B on Cerebras for multimodal analysis
-- Explores **4 parallel universes** (competing hypotheses)
+- Accepts incident logs and dashboard/image descriptions
+- Uses Gemma 4 31B on Cerebras for structured multimodal analysis in live mode
+- Explores **4 parallel universes**: release regression, payment latency, cache pressure, and feature-flag regression
 - Ranks universes with confidence scores
-- Provides actionable remediation steps with rollback guidance
-- Shows timing metrics and audit information
-- Supports both **mock mode** (for development) and **live mode**
+- Provides remediation actions with rollback guidance
+- Displays timing metrics and audit information
+- Supports both **mock mode** and **live mode**
 
 ## Architecture Overview
 
-Incident Logs + Image
+```text
+Incident Logs + Image Context
         ↓
-   Extract Evidence (Gemma 4)
+Extract Evidence
         ↓
-   Generate 4 Hypotheses
+Generate 4 Hypotheses
         ↓
-   Investigate 4 Universes in Parallel
+Investigate 4 Universes (sequential fallback or LangGraph Send)
         ↓
-   Rank & Synthesize Final Report
+Rank & Synthesize Final Report
         ↓
-   Display in Streamlit UI
+Display in Streamlit UI
+```
 
-## How to Run
-
-### 1. Setup
+## Setup
 
 ```powershell
 cd multiverseguard
 python -m venv .venv
 .\.venv\Scripts\activate
 pip install -r requirements.txt
-
-2. Configure EnvironmentCopy the example file and add your Cerebras API key:powershell
-
 copy .env.example .env
+```
 
-Edit .env and add your key:env
+Edit `.env` and add your Cerebras API key for live mode:
 
-CEREBRAS_API_KEY=your_cerebras_api_key
-
-3. Run the Applicationpowershell
-
-streamlit run src/ui/app.py
-
-4. Run in Mock Mode (Recommended while developing)Set this in your .env file:env
-
+```env
+CEREBRAS_API_KEY=your_key_here
+CEREBRAS_MODEL=gemma-4-31b
 MULTIVERSEGUARD_MOCK=true
+```
 
-Demo VideoA 60-second demo video is available in demos/video_script.md.LicenseThis project was built for the Cerebras x Google Gemma 4 Hackathon.
+Keep `MULTIVERSEGUARD_MOCK=true` while developing.
 
----
+## Run Tests
 
-### Quick Notes on This Version:
+```powershell
+.\.venv\Scripts\python.exe -m pytest -q
+```
 
-- Clear **Hackathon Compliance** section (very important)
-- Beginner-friendly language
-- Clean structure
-- Good balance between detail and readability
-- Matches the improved `PROJECT_CONTEXT.md` I gave earlier
+## Run The Application
+
+```powershell
+.\.venv\Scripts\streamlit.exe run src\ui\app.py
+```
+
+## Demo
+
+A 60-second demo script is available in `demos/video_script.md`.
