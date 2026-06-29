@@ -193,3 +193,31 @@ Together AI GLM-5.2:
 - Aggregate output tok/sec: 275
 
 Result: Cerebras completed 4 concurrent calls 16.49x faster than Together GLM-5.2 by wall time in this benchmark run.
+
+## Reply With Test Scenarios + Dashboard Images
+
+Post this as a reply to your launch post to show the four example incidents and their synthetic dashboards.
+
+```text
+MultiverseGuard ships with four synthetic test scenarios you can try in the hosted app:
+
+1. Checkout SEV-1
+2. Auth/login outage
+3. Kafka/event-pipeline lag
+4. Regional load-balancer failure
+
+Each scenario has example logs, operator notes, and a synthetic dashboard PNG (no proprietary data):
+
+- data/examples/checkout_sev1_notes.txt + checkout_dashboard.png
+- data/examples/auth_login_outage_notes.txt + auth_dashboard.png
+- data/examples/kafka_pipeline_lag_notes.txt + kafka_dashboard.png
+- data/examples/regional_lb_failure_notes.txt + regional_lb_dashboard.png
+
+Load a scenario, optionally upload its dashboard, run the four universe workflow, and compare Cerebras vs Together GLM-5.2.
+
+Video:
+Live app:
+GitHub:
+
+#Cerebras #Gemma #AIagents #LangGraph #IncidentResponse
+```
