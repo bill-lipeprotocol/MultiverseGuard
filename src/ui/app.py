@@ -15,6 +15,11 @@ if str(ROOT) not in sys.path:
 from src.graph.multiverse_graph import DEMO_UNIVERSE_COUNT, LANGGRAPH_AVAILABLE, run_multiverse_guard
 from src.models.schemas import IncidentInput
 from src.utils.cerebras_client import CerebrasClient
+from src.utils.speed_benchmark import (
+    calculate_speedup,
+    run_cerebras_benchmark,
+    run_together_benchmark,
+)
 
 load_dotenv(ROOT / ".env")
 
@@ -221,3 +226,63 @@ if run:
                 "repair_triggered": repair_triggered,
             }
         )
+
+# --- Speed Comparison: Cerebras vs GPU-hosted GLM-5.2 (isolated benchmark) ---
+# This panel does NOT run the MultiverseGuard graph on Together. It only sends the
+# same compact prompt to each provider and compares latency.
+st.divider()
+with st.expander("Speed Comparison: Cerebras vs GPU-hosted GLM-5.2", expanded=False):
+    st.caption(
+        "Runs the same compact incident-response prompt on Cerebras and Together AI "
+        "GLM-5.2 and compares latency. The main product path stays Cerebras + LangGraph."
+    )
+    together_key = os.getenv("TOGETHER_API_KEY", "")
+    if not together_key:
+        st.warning(
+            "Together API key not configured. Set TOGETHER_API_KEY to run GPU-hosted comparison."
+        )
+
+    if st.button("Run Speed Comparison"):
+        with st.spinner("Running compact benchmark on Cerebras and Together AI..."):
+            cerebras_result = run_cerebras_benchmark()
+            together_result = run_together_benchmark()
+
+        col1, col2 = st.columns(2)
+
+        with col1:
+            st.subheader("Cerebras")
+            st.metric("Latency", f"{cerebras_result.latency_seconds:.2f}s")
+            if cerebras_result.tokens_per_second is not None:
+                st.metric("Tokens/sec", f"{cerebras_result.tokens_per_second:.0f}")
+            if cerebras_result.prompt_tokens is not None:
+                st.caption(f"prompt tokens: {cerebras_result.prompt_tokens}")
+            if cerebras_result.completion_tokens is not None:
+                st.caption(f"completion tokens: {cerebras_result.completion_tokens}")
+            st.caption(cerebras_result.model)
+            if cerebras_result.error:
+                st.error(cerebras_result.error)
+            else:
+                st.code(cerebras_result.output_preview, language="json")
+
+        with col2:
+            st.subheader("Together AI GLM-5.2")
+            st.metric("Latency", f"{together_result.latency_seconds:.2f}s")
+            if together_result.tokens_per_second is not None:
+                st.metric("Tokens/sec", f"{together_result.tokens_per_second:.0f}")
+            if together_result.prompt_tokens is not None:
+                st.caption(f"prompt tokens: {together_result.prompt_tokens}")
+            if together_result.completion_tokens is not None:
+                st.caption(f"completion tokens: {together_result.completion_tokens}")
+            st.caption(together_result.model)
+            if together_result.error:
+                st.error(together_result.error)
+            else:
+                st.code(together_result.output_preview, language="json")
+
+        speedup = calculate_speedup(cerebras_result, together_result)
+        if speedup is not None:
+            st.success(
+                f"Cerebras latency speedup: {speedup:.2f}x faster than Together on this benchmark."
+            )
+        else:
+            st.info("Speedup unavailable because one or both providers returned an error.")
