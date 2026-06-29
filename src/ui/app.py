@@ -16,9 +16,12 @@ from src.graph.multiverse_graph import DEMO_UNIVERSE_COUNT, LANGGRAPH_AVAILABLE,
 from src.models.schemas import IncidentInput
 from src.utils.cerebras_client import CerebrasClient
 from src.utils.speed_benchmark import (
+    calculate_parallel_speedup,
     calculate_speedup,
     run_cerebras_benchmark,
+    run_cerebras_parallel_benchmark,
     run_together_benchmark,
+    run_together_parallel_benchmark,
 )
 
 load_dotenv(ROOT / ".env")
@@ -242,7 +245,7 @@ with st.expander("Speed Comparison: Cerebras vs GPU-hosted GLM-5.2", expanded=Fa
             "Together API key not configured. Set TOGETHER_API_KEY to run GPU-hosted comparison."
         )
 
-    if st.button("Run Speed Comparison"):
+    if st.button("Run Single-Call Benchmark"):
         with st.spinner("Running compact benchmark on Cerebras and Together AI..."):
             cerebras_result = run_cerebras_benchmark()
             together_result = run_together_benchmark()
@@ -286,3 +289,57 @@ with st.expander("Speed Comparison: Cerebras vs GPU-hosted GLM-5.2", expanded=Fa
             )
         else:
             st.info("Speedup unavailable because one or both providers returned an error.")
+
+    st.markdown("---")
+    st.subheader("4-Way Parallel Benchmark")
+    st.caption(
+        "Sends four concurrent variant prompts to each provider and compares wall time. "
+        "This benchmark is separate from the LangGraph four-universe workflow."
+    )
+
+    if st.button("Run 4-Way Parallel Benchmark"):
+        with st.spinner("Running 4 concurrent calls on Cerebras and Together AI..."):
+            cerebras_parallel = run_cerebras_parallel_benchmark()
+            together_parallel = run_together_parallel_benchmark()
+
+        pcol1, pcol2 = st.columns(2)
+
+        with pcol1:
+            st.subheader("Cerebras (4 concurrent)")
+            st.metric("Wall time", f"{cerebras_parallel.wall_time_seconds:.2f}s")
+            st.metric("Completed calls", cerebras_parallel.completed_count)
+            st.metric("Errored calls", cerebras_parallel.errored_count)
+            if cerebras_parallel.average_latency_seconds is not None:
+                st.metric("Avg per-call latency", f"{cerebras_parallel.average_latency_seconds:.2f}s")
+            if cerebras_parallel.max_latency_seconds is not None:
+                st.metric("Max per-call latency", f"{cerebras_parallel.max_latency_seconds:.2f}s")
+            if cerebras_parallel.aggregate_tokens_per_second is not None:
+                st.metric("Aggregate output tok/sec", f"{cerebras_parallel.aggregate_tokens_per_second:.0f}")
+            st.caption(cerebras_parallel.model)
+            if cerebras_parallel.error:
+                st.error(cerebras_parallel.error)
+
+        with pcol2:
+            st.subheader("Together AI GLM-5.2 (4 concurrent)")
+            st.metric("Wall time", f"{together_parallel.wall_time_seconds:.2f}s")
+            st.metric("Completed calls", together_parallel.completed_count)
+            st.metric("Errored calls", together_parallel.errored_count)
+            if together_parallel.average_latency_seconds is not None:
+                st.metric("Avg per-call latency", f"{together_parallel.average_latency_seconds:.2f}s")
+            if together_parallel.max_latency_seconds is not None:
+                st.metric("Max per-call latency", f"{together_parallel.max_latency_seconds:.2f}s")
+            if together_parallel.aggregate_tokens_per_second is not None:
+                st.metric("Aggregate output tok/sec", f"{together_parallel.aggregate_tokens_per_second:.0f}")
+            st.caption(together_parallel.model)
+            if together_parallel.error:
+                st.error(together_parallel.error)
+
+        parallel_speedup = calculate_parallel_speedup(cerebras_parallel, together_parallel)
+        if parallel_speedup is not None:
+            st.success(
+                f"Cerebras completed 4 concurrent calls {parallel_speedup:.2f}x faster than Together GLM-5.2 by wall time."
+            )
+        else:
+            st.info(
+                "4-way parallel speedup unavailable because one or both providers returned an error."
+            )
