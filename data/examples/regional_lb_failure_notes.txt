@@ -1,0 +1,33 @@
+Regional Load Balancer Failure - Incident Notes (synthetic)
+
+Timeline: Friday 19:22-19:45 PT
+
+Operator notes:
+- Elevated 502s concentrated in region us-east-1; other regions healthy.
+- Pods report healthy but load-balancer target health checks are failing intermittently.
+- TLS handshake errors (alert 40/70) appear on the regional LB.
+- A WAF and LB rule change was applied at 19:18 (regex path rule).
+- Regional p95 latency spiked; upstream services in-region are reachable.
+- Rolling back the LB rule change is reversible.
+- No application deploy in the incident window.
+
+Representative logs:
+regional-lb-us-east-1:
+ERROR 502 upstream=checkout-pods target_check=failing
+WARN tls_handshake alert=70 (protocol_version) count=221
+INFO rule_change rule_id=path-regex-v2 applied_at=19:18 PT
+
+checkout-pods (us-east-1):
+INFO healthz status=ok
+INFO readiness status=ok
+WARN target_group health=failing from_lb=true
+
+waf:
+WARN waf_rule rule_id=path-regex-v2 action=block matched_path=/checkout/*
+ERROR waf_false_positive candidate_paths=342
+
+Alerts:
+- regional_502_rate us-east-1 > 8% for 3m (firing)
+- target_health_check_failures us-east-1 > 50/min for 4m (firing)
+- tls_handshake_errors > 200/min for 2m (firing)
+- lb_rule_change at 19:18 (info)

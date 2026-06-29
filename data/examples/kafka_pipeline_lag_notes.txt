@@ -1,0 +1,35 @@
+Kafka/Event Pipeline Lag - Incident Notes (synthetic)
+
+Timeline: Thursday 03:10-03:40 PT
+
+Operator notes:
+- Consumer lag for orders-events consumer group rose from ~2k to ~180k messages.
+- Dead-letter queue (DLQ) growth spiked starting 03:18.
+- Schema validation errors reference a new field "promo_tax_code" added by an upstream producer.
+- Order fulfillment delayed; inventory updates stale by ~12 minutes.
+- A consumer deployment (orders-consumer v3.5.0) landed at 03:08.
+- Broker partition leader imbalance detected on the orders-events topic.
+- Downstream warehouse ingestion is throttling due to a separate batch job.
+
+Representative logs:
+orders-consumer-3.5.0:
+ERROR consume topic=orders-events group=orders-consumer error="schema violation: unknown field promo_tax_code"
+WARN lag=182341 partition=7 last_offset=...
+INFO deploy v3.5.0 promoted_at=03:08 PT
+
+schema-registry:
+WARN schema_compatibility subject=orders-events-value mode=BACKWARD result=INCOMPATIBLE
+INFO schema_new_version id=42 fields_added=1
+
+kafka-broker:
+WARN leader_imbalance topic=orders-events partitions_without_preferred_leader=4
+WARN under_replicated_partitions=2
+
+warehouse-ingest:
+WARN throttle rate_limited=true job=nightly_replay backlog=high
+
+Alerts:
+- consumer_lag > 100k for 5m (firing)
+- dlq_growth_rate > 1k/min for 3m (firing)
+- schema_validation_errors > 500/min for 4m (firing)
+- broker_partition_imbalance > 3 (firing)

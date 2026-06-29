@@ -1,0 +1,32 @@
+Auth/Login Outage - Incident Notes (synthetic)
+
+Timeline: Tuesday 14:02-14:18 PT
+
+Operator notes:
+- Login success rate dropped from ~99.9% to 91% starting 14:04.
+- 401/403 rate spiked shortly after a certificate rotation at 14:01.
+- auth-service logs show JWKS cache errors and intermittent kid-not-found.
+- Identity provider (IdP) p99 latency elevated but not fully down.
+- A small subset of tokens fail validation with "signature verification failed".
+- Rolling back the cert rotation is reversible but breaks the new expiry.
+- No deploy to auth-gateway middleware, but a WAF rule update landed at 13:58.
+
+Representative logs:
+auth-service-6b2:
+ERROR token_verify kid=abc123 status=not_found cache=jwks
+WARN jwks_refresh elapsed_ms=4200 status=partial
+ERROR login status=403 route=/auth/token reason="signature verification failed"
+
+idp-adapter:
+WARN idp_jwks_fetch elapsed_ms=3800 region=us-west-2
+INFO idp_health overall=degraded
+
+auth-gateway:
+WARN waf_rule rule_id=jwt-strict applied_at=13:58 PT
+ERROR tls_handshake alert=42 (bad certificate) count=412
+
+Alerts:
+- login_401_403_rate > 5% for 4m (firing)
+- jwks_cache_errors > 100/min for 3m (firing)
+- idp_p99_latency > 3s for 2m (firing)
+- cert_rotation_event at 14:01 (info)

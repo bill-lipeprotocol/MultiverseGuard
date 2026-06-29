@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import base64
+import hmac
 import os
 import sys
 from pathlib import Path
@@ -49,6 +50,21 @@ st.set_page_config(page_title="MultiverseGuard", page_icon=":shield:", layout="w
 st.title("MultiverseGuard")
 st.caption("4-universe multimodal incident response with Gemma 4 31B on Cerebras")
 
+def configured_access_code() -> str:
+    return os.getenv("APP_ACCESS_CODE", "").strip()
+
+
+def access_verified() -> bool:
+    # No configured code -> open local development, never block.
+    if not configured_access_code():
+        return True
+    return bool(st.session_state.get("mg_access_verified", False))
+
+
+def live_calls_allowed() -> bool:
+    return access_verified()
+
+
 with st.sidebar:
     st.header("Run Settings")
     default_mock = os.getenv("MULTIVERSEGUARD_MOCK", "true").strip().lower() != "false" or not os.getenv("CEREBRAS_API_KEY")
@@ -62,6 +78,23 @@ with st.sidebar:
             "Dashboard shows checkout 5xx spike, p95 latency increase, deploy marker, "
             "DB pool at 100/100, and payment retries without confirmed provider outage."
         )
+
+    # Optional access gate: protects live API usage on public deployments.
+    if configured_access_code():
+        st.divider()
+        st.subheader("Access")
+        if access_verified():
+            st.caption("Live API access: enabled")
+        else:
+            st.caption("Live Cerebras/Together calls require an access code. Mock mode works without it.")
+            entered = st.text_input("Access code", type="password", key="mg_access_code_input")
+            if st.button("Unlock live calls", use_container_width=True):
+                if hmac.compare_digest(entered, configured_access_code()):
+                    st.session_state["mg_access_verified"] = True
+                    st.success("Access granted. Live calls are now enabled.")
+                else:
+                    st.session_state["mg_access_verified"] = False
+                    st.error("Incorrect access code.")
 
 left, right = st.columns([0.42, 0.58], gap="large")
 
@@ -111,6 +144,11 @@ if run:
         image_data_uri=image_data_uri,
     )
     client = CerebrasClient(mock=mock_mode)
+
+    # Gate live (non-mock) runs behind the optional access code.
+    if not client.mock and not live_calls_allowed():
+        st.error("Access code required for live runs. Enter it in the sidebar or enable Mock mode.")
+        st.stop()
 
     with st.spinner("Running 4 universe investigations..."):
         try:
@@ -246,6 +284,9 @@ with st.expander("Speed Comparison: Cerebras vs GPU-hosted GLM-5.2", expanded=Fa
         )
 
     if st.button("Run Single-Call Benchmark"):
+        if not live_calls_allowed():
+            st.error("Access code required for live benchmarks. Enter it in the sidebar.")
+            st.stop()
         with st.spinner("Running compact benchmark on Cerebras and Together AI..."):
             cerebras_result = run_cerebras_benchmark()
             together_result = run_together_benchmark()
@@ -298,6 +339,9 @@ with st.expander("Speed Comparison: Cerebras vs GPU-hosted GLM-5.2", expanded=Fa
     )
 
     if st.button("Run 4-Way Parallel Benchmark"):
+        if not live_calls_allowed():
+            st.error("Access code required for live benchmarks. Enter it in the sidebar.")
+            st.stop()
         with st.spinner("Running 4 concurrent calls on Cerebras and Together AI..."):
             cerebras_parallel = run_cerebras_parallel_benchmark()
             together_parallel = run_together_parallel_benchmark()

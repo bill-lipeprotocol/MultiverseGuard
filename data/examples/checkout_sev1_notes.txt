@@ -1,0 +1,34 @@
+Checkout SEV-1 - Incident Notes (synthetic)
+
+Timeline: Saturday 10:36-10:51 PT
+
+Operator notes:
+- checkout-api v2.18.0 canary reached 50% at 10:36, promoted to 100% at 10:38.
+- Checkout p95 latency climbed from 480ms to 2.9s starting 10:40.
+- 5xx rate crossed 12% at 10:42.
+- DB pool pinned at 100/100 active with acquisition timeouts.
+- Customers report payment spinner and intermittent "Unable to place order".
+- payment-adapter shows retries but provider status page is green.
+- Redis hit rate slightly lower; not enough data yet.
+- checkout_recommendations_v2 flag enabled at 10:34 (25% cohort).
+- Autoscaling added pods but error rate did not improve.
+
+Representative logs:
+checkout-api-7ddc9f:
+ERROR order_submit request_id=8f7 timeout="db connection acquisition exceeded 2500ms" cart_id=redacted
+WARN payment_authorize retry=2 elapsed_ms=3100 request_id=8f7
+ERROR order_submit status=504 route=/checkout/submit version=v2.18.0
+
+orders-db:
+WARN pool_wait_ms=2480 active=100 idle=0 pending=372 service=checkout-api
+WARN slow_query fingerprint="SELECT promotions.*, inventory.* FROM..." p95_ms=1840
+
+feature_flags:
+INFO checkout_recommendations_v2 cohort=25% enabled_at=10:34 PT
+INFO checkout_release_guardrails enabled=true
+
+Alerts:
+- checkout_5xx_rate > 10% for 3m (firing)
+- checkout_p95_latency > 2s for 2m (firing)
+- db_pool_active_connections == max for 5m (firing)
+- payment_provider_status = green (not firing)

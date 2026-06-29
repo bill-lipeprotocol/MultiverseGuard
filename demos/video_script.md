@@ -35,3 +35,26 @@ Show the final report, winning universe, recommended next steps, and rollback.
 "The result is faster MTTR, audited reasoning, and safer enterprise response."
 
 End on the final report and timing metrics.
+
+## Benchmark Panel (optional supplementary shot)
+
+Open "Speed Comparison: Cerebras vs GPU-hosted GLM-5.2" and click "Run 4-Way Parallel Benchmark".
+
+Narration:
+> "The full app uses LangGraph for the four-universe workflow. This benchmark separately compares four concurrent incident-analysis prompts on Cerebras versus Together's GPU-hosted GLM-5.2, showing the wall-time speedup."
+
+Show:
+- Cerebras wall time, completed/errored calls, aggregate tok/sec
+- Together AI GLM-5.2 wall time, aggregate tok/sec
+- The speedup banner: "Cerebras completed 4 concurrent calls 16.49x faster than Together GLM-5.2 by wall time in this benchmark run."
+
+Do not claim Together ran the full MultiverseGuard graph. Do not show API keys.
+
+## Demo Checklist
+
+On screen, point at the "Demo Checklist" expander showing all green:
+- 4 universes generated
+- 4 branches completed
+- 4 ranked results
+- ranked descending
+- repair triggered: false
